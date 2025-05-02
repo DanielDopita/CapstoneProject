@@ -7,18 +7,28 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "clean": "rm -rf node_modules/.cache && rm -rf $TMPDIR/metro-*",
+    "reset": "npm run clean && npm install && npm start -- --reset-cache"
   },
   "dependencies": {
-    "expo": "~52.0.37",
+    "@expo/metro-runtime": "~4.0.1",
+    "@react-native-community/geolocation": "^3.4.0",
+    "expo": "~52.0.46",
     "expo-status-bar": "~2.0.1",
     "react": "18.3.1",
-    "react-native": "0.76.7",
-    "react-native-web": "~0.19.13",
-    "@expo/metro-runtime": "~4.0.1"
+    "react-native": "^0.76.9",
+    "react-native-geolocation-service": "^5.3.1",
+    "react-native-web": "~0.19.13"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.0"
+    "@babel/core": "^7.26.10",
+    "@babel/plugin-transform-class-properties": "^7.25.9",
+    "@babel/plugin-transform-private-methods": "^7.25.9",
+    "@babel/plugin-transform-private-property-in-object": "^7.25.9",
+    "babel-plugin-transform-inline-environment-variables": "^0.4.4",
+    "metro-react-native-babel-preset": "^0.76.9",
+    "react-native-dotenv": "^3.4.11"
   },
   "private": true
 }

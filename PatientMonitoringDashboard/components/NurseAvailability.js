@@ -1,14 +1,28 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, FlatList } from 'react-native';
+import ApiService from '../services/api';
 
 const NurseAvailability = () => {
+  const [nurses, setNurses] = useState([]);
+
+  useEffect(() => {
+    ApiService.getNurses()
+      .then(data => setNurses(data.nurses))
+      .catch(console.error);
+  }, []);
+
   return (
-    <TouchableOpacity style={styles.container} activeOpacity={0.8}>
+    <View style={styles.container}>
       <Text style={styles.header}>Nurse Availability</Text>
-      <Text style={styles.text}>ER: Nurse #1</Text>
-      <Text style={styles.text}>OB: Nurse #2</Text>
-      <Text style={styles.text}>PCU: Nurse #3</Text>
-    </TouchableOpacity>
+      <View style={styles.grid}>
+        {nurses.map((nurse, index) => (
+          <View key={index} style={styles.card}>
+            <Text style={styles.text}>{nurse.department}</Text>
+            <Text style={styles.subtext}>{nurse.name}</Text>
+          </View>
+        ))}
+      </View>
+    </View>
   );
 };
 
@@ -17,16 +31,41 @@ const styles = StyleSheet.create({
     backgroundColor: '#222',
     padding: 20,
     borderRadius: 10,
+    marginBottom: 20,
   },
   header: {
-    fontSize: 28, // Larger font for TV screens
+    fontSize: 28,
     fontWeight: 'bold',
     color: 'white',
-    marginBottom: 10,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  card: {
+    backgroundColor: '#333',
+    width: '23%',
+    marginBottom: 15,
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 100,
   },
   text: {
     color: 'white',
-    fontSize: 24, // Larger font for TV screens
+    fontSize: 20,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: 5,
+  },
+  subtext: {
+    color: '#bbb',
+    fontSize: 18,
+    textAlign: 'center',
   },
 });
 
