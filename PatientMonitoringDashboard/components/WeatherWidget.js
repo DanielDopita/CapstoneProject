@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, PermissionsAndroid, Platform } from 'react-native';
-import { WEATHER_API_KEY } from '@env';
-import Geolocation from 'react-native-geolocation-service';
+import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import * as Location from 'expo-location';
+import { WEATHER_API_KEY, DEFAULT_LOCATION } from '@env';
 
 const WeatherWidget = () => {
   const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [locationName, setLocationName] = useState('Hays, Kansas');
+  const [locationName, setLocationName] = useState(DEFAULT_LOCATION || 'Hays, Kansas');
 
   useEffect(() => {
     const fetchWeather = async (lat, lon) => {
@@ -16,7 +16,7 @@ const WeatherWidget = () => {
         if (lat && lon) {
           url = `https://api.weatherapi.com/v1/current.json?key=${WEATHER_API_KEY}&q=${lat},${lon}`;
         } else {
-          url = `https://api.weatherapi.com/v1/current.json?key=${WEATHER_API_KEY}&q=Hays,Kansas`;
+          url = `https://api.weatherapi.com/v1/current.json?key=${WEATHER_API_KEY}&q=${DEFAULT_LOCATION || 'Hays,Kansas'}`;
         }
 
         const response = await fetch(url);
@@ -38,46 +38,24 @@ const WeatherWidget = () => {
       }
     };
 
-    const requestLocationPermission = async () => {
-      if (Platform.OS === 'android') {
-        try {
-          const granted = await PermissionsAndroid.request(
-            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-          );
-          if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-            Geolocation.getCurrentPosition(
-              (position) => {
-                fetchWeather(position.coords.latitude, position.coords.longitude);
-              },
-              (error) => {
-                console.warn('Location error:', error);
-                fetchWeather(); // Fallback to Hays, KS
-              },
-              { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
-            );
-          } else {
-            fetchWeather(); // Fallback to Hays, KS
-          }
-        } catch (err) {
-          console.warn('Permission error:', err);
-          fetchWeather(); // Fallback to Hays, KS
+    const getLocation = async () => {
+      try {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          setError('Location permission denied - using default location');
+          fetchWeather(); // Fallback to default location
+          return;
         }
-      } else {
-        // For iOS
-        Geolocation.getCurrentPosition(
-          (position) => {
-            fetchWeather(position.coords.latitude, position.coords.longitude);
-          },
-          (error) => {
-            console.warn('Location error:', error);
-            fetchWeather(); // Fallback to Hays, KS
-          },
-          { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
-        );
+
+        let location = await Location.getCurrentPositionAsync({});
+        fetchWeather(location.coords.latitude, location.coords.longitude);
+      } catch (err) {
+        console.warn('Location error:', err);
+        fetchWeather(); // Fallback to default location
       }
     };
 
-    requestLocationPermission();
+    getLocation();
   }, []);
 
   return (
@@ -85,7 +63,10 @@ const WeatherWidget = () => {
       {loading ? (
         <ActivityIndicator size="large" color="#fff" />
       ) : error ? (
-        <Text style={styles.errorText}>{error}</Text>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Weather Unavailable</Text>
+          <Text style={styles.errorSubtext}>{error}</Text>
+        </View>
       ) : weather && (
         <>
           <Text style={styles.header}>{locationName}</Text>
@@ -139,9 +120,18 @@ const styles = StyleSheet.create({
     color: '#ddd',
     fontSize: 14,
   },
+  errorContainer: {
+    alignItems: 'center',
+  },
   errorText: {
-    color: 'red',
-    fontSize: 16,
+    color: '#ff9999',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  errorSubtext: {
+    color: '#ffcccc',
+    fontSize: 14,
+    marginTop: 5,
     textAlign: 'center',
   },
 });
