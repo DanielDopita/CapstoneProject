@@ -1,0 +1,6 @@
+WEATHER_API_KEY=your_api_key_here
+API_BASE_URL=https://api.weatherapi.com/v1
+DEFAULT_LOCATION=Hays, Kansas
+
+MOCK_API_PATIENTS=https://mocki.io/v1/d9d138d5-3f7d-490a-8d2d-cf14454db997
+MOCK_API_NURSES=https://mocki.io/v1/e3d2b80e-6c4d-4174-a601-dd0b9bcee6cc
